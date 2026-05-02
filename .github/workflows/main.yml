@@ -3,7 +3,11 @@ name: AS Academy WhatsApp Bot
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 * * * *' # Runs every 1 hour to keep session alive
+    - cron: '0 * * * *' # Restart every hour to keep session alive
+
+concurrency:
+  group: whatsapp-bot      # Only ONE bot instance allowed at a time
+  cancel-in-progress: true # Kill the old run before starting the new one
 
 jobs:
   run-bot:

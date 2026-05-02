@@ -2,650 +2,164 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>AS Academy Admin | Premium Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AS Academy Admin | Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
-    <style>
-        :root {
-            --primary: #10b981;
-            --primary-dark: #059669;
-            --primary-soft: #d1fae5;
-            --bg-body: #f8fafc;
-            --bg-card: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border: #e2e8f0;
-            --sidebar-width: 260px;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --info: #3b82f6;
-        }
-
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-        body {
-            margin: 0;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* --- Custom Scrollbar --- */
-        ::-webkit-scrollbar { width: 5px; height: 5px; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-
-        /* --- Sidebar --- */
-        .sidebar {
-            width: var(--sidebar-width);
-            background-color: #0f172a;
-            display: flex;
-            flex-direction: column;
-            padding: 24px;
-            transition: all 0.3s ease;
-            z-index: 100;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: white;
-            margin-bottom: 40px;
-            letter-spacing: -0.5px;
-        }
-        .logo i { color: var(--primary); }
-
-        .nav-links { list-style: none; padding: 0; margin: 0; flex: 1; }
-        .nav-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 16px;
-            color: #94a3b8;
-            text-decoration: none;
-            border-radius: 12px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-        .nav-item i { width: 24px; font-size: 1.1rem; }
-        .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
-        .nav-item.active { background: var(--primary); color: white; }
-
-        .logout-btn { color: #f87171; margin-top: auto; }
-
-        /* --- Main Layout --- */
-        .main-wrapper {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .top-bar {
-            height: 70px;
-            background: white;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            padding: 0 40px;
-            justify-content: space-between;
-        }
-
-        .mobile-toggle { display: none; font-size: 1.5rem; cursor: pointer; }
-
-        .content-area {
-            flex: 1;
-            overflow-y: auto;
-            padding: 40px;
-        }
-
-        /* --- Sections --- */
-        .section { display: none; }
-        .section.active { display: block; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .header-flex {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-        .header-flex h1 { font-size: 1.8rem; font-weight: 800; margin: 0; letter-spacing: -1px; }
-
-        /* --- Stats Card --- */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 20px;
-            margin-bottom: 40px;
-        }
-        .stat-card {
-            background: white;
-            padding: 24px;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        .stat-icon {
-            width: 54px; height: 54px;
-            background: var(--primary-soft);
-            color: var(--primary);
-            border-radius: 14px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.4rem;
-        }
-        .stat-info h3 { margin: 0; font-size: 1.6rem; font-weight: 800; }
-        .stat-info p { margin: 2px 0 0; color: var(--text-muted); font-size: 0.9rem; font-weight: 600; }
-
-        /* --- Tables --- */
-        .table-container {
-            background: white;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-        }
-        table { width: 100%; border-collapse: collapse; }
-        th {
-            background: #f8fafc;
-            padding: 16px 24px;
-            text-align: left;
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-muted);
-            border-bottom: 1px solid var(--border);
-        }
-        td {
-            padding: 18px 24px;
-            border-bottom: 1px solid var(--border);
-            font-size: 0.95rem;
-            vertical-align: middle;
-        }
-        tr:last-child td { border-bottom: none; }
-
-        /* --- Buttons & Inputs --- */
-        .btn-add {
-            background: var(--primary);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 12px;
-            border: none;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex; align-items: center; gap: 8px;
-            transition: 0.3s;
-        }
-        .btn-add:hover { background: var(--primary-dark); transform: translateY(-2px); }
-
-        /* --- Grid for Courses --- */
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 24px;
-        }
-        .admin-card {
-            background: white; border-radius: 20px; overflow: hidden;
-            border: 1px solid var(--border); position: relative;
-        }
-        .admin-card img { width: 100%; height: 160px; object-fit: cover; }
-        .admin-card-body { padding: 20px; }
-        .admin-card h4 { margin: 0 0 5px; font-weight: 700; font-size: 1.1rem; }
-        .delete-btn {
-            position: absolute; top: 10px; right: 10px;
-            background: white; color: var(--danger);
-            border: none; width: 32px; height: 32px; border-radius: 8px;
-            cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        /* --- Auth Overlay --- */
-        #authOverlay {
-            position: fixed; inset: 0; background: var(--bg-body);
-            z-index: 2000; display: flex; align-items: center; justify-content: center;
-        }
-        .login-box {
-            background: white; padding: 40px; border-radius: 30px;
-            width: 100%; max-width: 400px; border: 1px solid var(--border);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.05); text-align: center;
-        }
-        .login-box input {
-            width: 100%; padding: 16px; margin-bottom: 15px;
-            border: 1px solid var(--border); border-radius: 12px;
-            font-family: inherit; font-size: 1rem;
-        }
-
-        /* --- Modals --- */
-        .modal {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-            z-index: 1000; align-items: center; justify-content: center; padding: 20px;
-        }
-        .modal-content {
-            background: white; padding: 30px; border-radius: 24px;
-            width: 100%; max-width: 450px; position: relative;
-        }
-        .close-modal { position: absolute; right: 20px; top: 20px; cursor: pointer; font-size: 1.5rem; }
-
-        /* --- Responsive --- */
-        @media (max-width: 992px) {
-            .sidebar { position: fixed; left: -280px; top: 0; bottom: 0; }
-            .sidebar.active { left: 0; }
-            .mobile-toggle { display: block; }
-            .top-bar { padding: 0 20px; }
-            .content-area { padding: 20px; }
-        }
-
-        @media (max-width: 768px) {
-            .header-flex { flex-direction: column; align-items: flex-start; gap: 15px; }
-            .btn-add { width: 100%; justify-content: center; }
-            .table-container { background: transparent; border: none; box-shadow: none; }
-            table, thead, tbody, th, td, tr { display: block; }
-            thead { display: none; }
-            tr {
-                background: white; margin-bottom: 20px; padding: 20px;
-                border-radius: 20px; border: 1px solid var(--border);
-                box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-            }
-            td {
-                display: flex; justify-content: space-between; align-items: center;
-                padding: 12px 0; border-bottom: 1px solid #f1f5f9;
-                text-align: right; font-size: 0.9rem;
-            }
-            td:last-child { border: none; padding-bottom: 0; }
-            td::before {
-                content: attr(data-label);
-                font-weight: 700; text-transform: uppercase;
-                font-size: 0.75rem; color: var(--text-muted);
-                text-align: left;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="dashboard.css">
 </head>
 <body>
+    <!-- Cursor glow -->
+    <div class="cursor-glow" id="cursorGlow"></div>
+    <!-- Background -->
+    <div class="aurora"></div>
+    <div class="grid-bg"></div>
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
 
-    <!-- AUTH SECTION -->
-    <div id="authOverlay">
-        <div class="login-box">
-            <div class="logo" style="justify-content: center; color: var(--text-main); margin-bottom: 15px;">
-                <i class="fas fa-leaf"></i> AS Academy
+    <!-- LOGIN OVERLAY -->
+    <div id="authOverlay" class="auth-overlay">
+        <div class="login-card">
+            <div class="login-logo"><i class="fas fa-graduation-cap"></i></div>
+            <h2>AS Academy</h2>
+            <p class="login-sub">Admin Portal</p>
+            <div class="input-wrap">
+                <i class="fas fa-user"></i>
+                <input type="text" id="adminEmail" placeholder="Username">
             </div>
-            <h2 style="margin-bottom: 25px; letter-spacing: -1px;">Admin Login</h2>
-            <input type="email" id="adminEmail" placeholder="Email Address">
-            <input type="password" id="adminPassword" placeholder="Password">
-            <p id="authError" style="color: var(--danger); font-size: 0.85rem; margin-bottom: 15px; font-weight: 600;"></p>
-            <button class="btn-add" id="loginBtn" style="width: 100%; justify-content: center;">Sign In</button>
+            <div class="input-wrap">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="adminPassword" placeholder="Password">
+            </div>
+            <p id="authError" class="auth-error"></p>
+            <button id="loginBtn" class="btn-primary"><i class="fas fa-sign-in-alt"></i> Sign In</button>
         </div>
     </div>
 
     <!-- SIDEBAR -->
-    <div class="sidebar" id="sidebar">
-        <div class="logo"><i class="fas fa-leaf"></i> AS Academy</div>
-        <ul class="nav-links">
-            <li class="nav-item active" data-target="dashboard">
-                <i class="fas fa-chart-line"></i> <span>Dashboard</span>
-            </li>
-            <li class="nav-item" data-target="leads">
-                <i class="fas fa-users"></i> <span>Leads (Clicks)</span>
-            </li>
-            <li class="nav-item" data-target="suggested">
-                <i class="fas fa-lightbulb"></i> <span>Suggested</span>
-            </li>
-            <li class="nav-item" data-target="menu">
-                <i class="fas fa-book"></i> <span>Courses</span>
-            </li>
-            <li class="nav-item logout-btn" id="logoutBtn">
-                <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
-            </li>
-        </ul>
-    </div>
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-logo"><i class="fas fa-graduation-cap"></i><span>AS Academy</span></div>
+        <nav class="sidebar-nav">
+            <a class="nav-item active" data-target="dashboard"><i class="fas fa-chart-line"></i><span>Overview</span></a>
+            <a class="nav-item" data-target="leads"><i class="fas fa-users"></i><span>Leads</span></a>
+            <a class="nav-item" data-target="suggested"><i class="fas fa-lightbulb"></i><span>Suggested</span></a>
+            <a class="nav-item" data-target="menu"><i class="fas fa-book-open"></i><span>Courses</span></a>
+        </nav>
+        <a class="nav-item logout-btn" id="logoutBtn"><i class="fas fa-power-off"></i><span>Logout</span></a>
+    </aside>
+    <!-- Sidebar overlay (mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
+    <!-- MAIN -->
     <div class="main-wrapper">
-        <div class="top-bar">
-            <div class="mobile-toggle" id="menuToggle"><i class="fas fa-bars"></i></div>
-            <div style="font-weight: 700; color: var(--text-muted);">Admin Panel v2.0</div>
-            <div id="userEmailDisplay" style="font-size: 0.85rem; font-weight: 600;"></div>
-        </div>
+        <header class="topbar">
+            <button class="mobile-toggle" id="menuToggle"><i class="fas fa-bars"></i></button>
+            <div class="topbar-title" id="topbarTitle">Overview</div>
+            <div class="topbar-user" id="userEmailDisplay"><i class="fas fa-circle-dot" style="color:#10b981"></i> Admin</div>
+        </header>
 
-        <div class="content-area">
-            
+        <main class="content-area">
+
             <!-- DASHBOARD -->
-            <div id="dashboard" class="section active">
-                <div class="header-flex">
+            <section id="dashboard" class="section active">
+                <div class="section-header">
                     <h1>Overview</h1>
-                    <button class="btn-add" style="background: var(--info); font-size: 0.8rem; padding: 8px 16px;" onclick="initData()"><i class="fas fa-sync"></i> Refresh All</button>
+                    <button class="btn-icon" onclick="initData()"><i class="fas fa-rotate-right"></i> Refresh</button>
                 </div>
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <div class="stat-icon"><i class="fas fa-book"></i></div>
-                        <div class="stat-info"><h3 id="stat-courses">0</h3><p>Total Courses</p></div>
+                        <div class="stat-icon blue"><i class="fas fa-book-open"></i></div>
+                        <div><h3 id="stat-courses">0</h3><p>Total Courses</p></div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon" style="background: #e0f2fe; color: #0ea5e9;"><i class="fas fa-mouse-pointer"></i></div>
-                        <div class="stat-info"><h3 id="stat-leads">0</h3><p>Website Clicks (Leads)</p></div>
+                        <div class="stat-icon cyan"><i class="fas fa-mouse-pointer"></i></div>
+                        <div><h3 id="stat-leads">0</h3><p>Website Clicks</p></div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-icon" style="background: #fef3c7; color: #d97706;"><i class="fas fa-lightbulb"></i></div>
-                        <div class="stat-info"><h3 id="stat-suggested">0</h3><p>New Suggestions</p></div>
+                        <div class="stat-icon purple"><i class="fas fa-lightbulb"></i></div>
+                        <div><h3 id="stat-suggested">0</h3><p>Suggestions</p></div>
                     </div>
                 </div>
-            </div>
+                <div class="glass-card">
+                    <div class="glass-card-header"><i class="fas fa-clock"></i> Recent Leads</div>
+                    <div class="table-responsive">
+                        <table><thead><tr><th>Time</th><th>Name</th><th>Phone</th><th>Course</th></tr></thead>
+                        <tbody id="recentLeadsBody"></tbody></table>
+                    </div>
+                </div>
+            </section>
 
-            <!-- MENU -->
-            <div id="menu" class="section">
-                <div class="header-flex">
+            <!-- LEADS -->
+            <section id="leads" class="section">
+                <div class="section-header">
+                    <h1>Website Leads</h1>
+                    <div class="btn-group">
+                        <button class="btn-icon" onclick="loadLeads()"><i class="fas fa-rotate-right"></i> Refresh</button>
+                        <button class="btn-icon danger" onclick="clearLeads()"><i class="fas fa-trash"></i> Clear</button>
+                    </div>
+                </div>
+                <div class="glass-card">
+                    <div class="table-responsive">
+                        <table><thead><tr><th>Time</th><th>Name</th><th>Phone</th><th>Course</th></tr></thead>
+                        <tbody id="leadsTableBody"></tbody></table>
+                    </div>
+                    <div class="pagination" id="leadsPagination"></div>
+                </div>
+            </section>
+
+            <!-- SUGGESTED -->
+            <section id="suggested" class="section">
+                <div class="section-header">
+                    <h1>Student Suggestions</h1>
+                    <div class="btn-group">
+                        <button class="btn-icon" onclick="loadSuggested()"><i class="fas fa-rotate-right"></i> Refresh</button>
+                        <button class="btn-icon danger" onclick="clearSuggested()"><i class="fas fa-trash"></i> Clear</button>
+                    </div>
+                </div>
+                <div class="glass-card">
+                    <div class="table-responsive">
+                        <table><thead><tr><th>Time</th><th>Name</th><th>Phone</th><th>Suggestion</th></tr></thead>
+                        <tbody id="suggestedTableBody"></tbody></table>
+                    </div>
+                    <div class="pagination" id="suggestedPagination"></div>
+                </div>
+            </section>
+
+            <!-- COURSES -->
+            <section id="menu" class="section">
+                <div class="section-header">
                     <h1>Courses</h1>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn-add" style="background: var(--info); font-size: 0.8rem; padding: 8px 16px;" onclick="loadCourses()"><i class="fas fa-sync"></i> Refresh</button>
-                        <button class="btn-add" id="openCourseModal"><i class="fas fa-plus"></i> Add New Course</button>
+                    <div class="btn-group">
+                        <button class="btn-icon" onclick="loadCourses()"><i class="fas fa-rotate-right"></i> Refresh</button>
+                        <button class="btn-icon" id="openCourseModal"><i class="fas fa-plus"></i> Add Course</button>
                     </div>
                 </div>
                 <div class="menu-grid" id="coursesGrid"></div>
-            </div>
+                <div class="pagination" id="coursesPagination" style="margin-top: 24px;"></div>
+            </section>
 
-            <!-- LEADS -->
-            <div id="leads" class="section">
-                <div class="header-flex">
-                    <h1>Website Leads</h1>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn-add" style="background: var(--info); font-size: 0.8rem; padding: 8px 16px;" onclick="loadLeads()"><i class="fas fa-sync"></i> Refresh</button>
-                        <button class="btn-add" style="background: var(--danger); font-size: 0.8rem; padding: 8px 16px;" onclick="clearLeads()"><i class="fas fa-trash-alt"></i> Clear All</button>
-                    </div>
-                </div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>Name</th>
-                                <th>Phone</th>
-                                <th>Course Clicked</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leadsTableBody">
-                            <!-- JS Injection -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- SUGGESTED -->
-            <div id="suggested" class="section">
-                <div class="header-flex">
-                    <h1>Student Suggestions</h1>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn-add" style="background: var(--info); font-size: 0.8rem; padding: 8px 16px;" onclick="loadSuggested()"><i class="fas fa-sync"></i> Refresh</button>
-                        <button class="btn-add" style="background: var(--danger); font-size: 0.8rem; padding: 8px 16px;" onclick="clearSuggested()"><i class="fas fa-trash-alt"></i> Clear All</button>
-                    </div>
-                </div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Time</th>
-                                <th>Name</th>
-                                <th>Phone</th>
-                                <th>Suggestion</th>
-                            </tr>
-                        </thead>
-                        <tbody id="suggestedTableBody">
-                            <!-- JS Injection -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-        </div>
+        </main>
     </div>
 
-    <!-- MODAL: ADD COURSE -->
-    <div id="courseModal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal">&times;</span>
-            <h2 id="courseModalTitle" style="margin-bottom: 25px;">New Course</h2>
+    <!-- MODAL -->
+    <div id="courseModal" class="modal-overlay">
+        <div class="modal-card">
+            <button class="modal-close close-modal"><i class="fas fa-times"></i></button>
+            <h2 id="courseModalTitle">New Course</h2>
             <input type="hidden" id="courseId">
-            <input type="text" id="courseName" placeholder="Course Name" class="login-box" style="box-shadow: none; padding: 12px; margin-bottom: 10px;">
-            <input type="text" id="courseImageUrl" placeholder="Image URL (Optional)" class="login-box" style="box-shadow: none; padding: 12px; margin-bottom: 10px;">
-            <input type="text" id="courseLink" placeholder="Course Link (Optional)" class="login-box" style="box-shadow: none; padding: 12px; margin-bottom: 20px;">
-            <button class="btn-add" id="saveCourseBtn" style="width: 100%; justify-content: center;">Save Course</button>
+            <div class="input-wrap"><i class="fas fa-book"></i><input type="text" id="courseName" placeholder="Course Name"></div>
+            <div class="input-wrap"><i class="fas fa-image"></i><input type="text" id="courseImageUrl" placeholder="Image URL (Optional)"></div>
+            <div class="input-wrap"><i class="fas fa-link"></i><input type="text" id="courseLink" placeholder="Course Link (Optional)"></div>
+            <button class="btn-primary" id="saveCourseBtn"><i class="fas fa-save"></i> Save Course</button>
         </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
-    <script>
-        console.log("🚀 AS Academy Tracking System Initializing...");
-        
-        const firebaseConfig = {
-            apiKey: "AIzaSyCG5EZoyctsQCoSrlbXyQ1Q4qQ5bVEkMis",
-            authDomain: "asacademywpbot.firebaseapp.com",
-            databaseURL: "https://asacademywpbot-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "asacademywpbot",
-            storageBucket: "asacademywpbot.firebasestorage.app",
-            messagingSenderId: "250186915176",
-            appId: "1:250186915176:web:885a1cea554752171b0add"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.database();
-
-        // 🚀 Lead Tracking Logic (Runs for every visitor)
-        function handleUrlParams() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const phone = urlParams.get('phone');
-            const name = urlParams.get('name');
-            const course = urlParams.get('course');
-
-            if (phone || name) {
-                console.log("📍 Lead detected in URL, attempting to save...");
-                
-                auth.signInAnonymously().then(() => {
-                    const cleanPhone = (phone && !phone.startsWith('+')) ? "+" + phone : (phone || 'Unknown');
-                    const leadData = {
-                        name: decodeURIComponent(name || 'Guest'),
-                        phone: cleanPhone,
-                        course: decodeURIComponent(course || 'Website Visit'),
-                        timestamp: new Date().toISOString()
-                    };
-
-                    db.ref('leads').push(leadData).then(() => {
-                        console.log("✅ Lead saved to Firebase successfully!");
-                    }).catch(e => {
-                        console.error("❌ Firebase Save Error:", e);
-                    });
-                }).catch(err => {
-                    console.error("❌ Firebase Auth Error:", err);
-                });
-
-                localStorage.setItem('wa_phone', (phone && !phone.startsWith('+')) ? "+" + phone : (phone || ''));
-                localStorage.setItem('wa_name', decodeURIComponent(name || ''));
-            } else {
-                console.log("ℹ️ No lead parameters found in URL.");
-            }
-        }
-        
-        // Execute tracking immediately
-        handleUrlParams();
-
-        const $ = (id) => document.getElementById(id);
-        
-        const navItems = document.querySelectorAll('.nav-item:not(.logout-btn)');
-        const sections = document.querySelectorAll('.section');        
-        navItems.forEach(item => {
-            item.addEventListener('click', () => {
-                navItems.forEach(i => i.classList.remove('active'));
-                item.classList.add('active');
-                sections.forEach(s => s.classList.remove('active'));
-                $(item.dataset.target).classList.add('active');
-                if(window.innerWidth < 992) $('sidebar').classList.remove('active');
-            });
-        });
-
-        $('menuToggle').onclick = () => $('sidebar').classList.toggle('active');
-
-        $('authOverlay').style.display = 'flex';
-        
-        $('loginBtn').onclick = () => {
-            const user = $('adminEmail').value;
-            const pass = $('adminPassword').value;
-            if(user === 'ASEQP' && pass === 'ASEQP') {
-                auth.signInAnonymously().catch(e => console.log('Anonymous auth disabled'));
-                $('authOverlay').style.display = 'none';
-                $('userEmailDisplay').textContent = 'Admin (ASEQP)';
-                initData();
-            } else {
-                $('authError').textContent = 'Invalid credentials. Try ASEQP';
-            }
-        };
-
-        $('logoutBtn').onclick = () => {
-            auth.signOut();
-            $('authOverlay').style.display = 'flex';
-            $('adminEmail').value = '';
-            $('adminPassword').value = '';
-        };
-
-        function initData() {
-            loadCourses();
-            loadLeads();
-            loadSuggested();
-        }
-
-        function loadCourses() {
-            db.ref('courses').on('value', snap => {
-                const grid = $('coursesGrid');
-                grid.innerHTML = '';
-                let c = 0;
-                snap.forEach(child => {
-                    c++;
-                    const item = child.val();
-                    const imgHtml = item.imageUrl ? `<img src="${item.imageUrl}" style="width: 100%; height: 160px; object-fit: cover; border-bottom: 1px solid var(--border);">` : '';
-                    grid.innerHTML += `
-                        <div class="admin-card" style="padding: 0; position: relative;">
-                            <button class="delete-btn" onclick="deleteItem('courses','${child.key}')"><i class="fas fa-trash"></i></button>
-                            <button class="delete-btn" style="right: 50px; color: var(--info);" onclick="editCourse('${child.key}', \`${item.name.replace(/`/g, '\\`')}\`, '${item.imageUrl || ''}', '${item.link || ''}')"><i class="fas fa-edit"></i></button>
-                            ${imgHtml}
-                            <div class="admin-card-body" style="padding: 20px; padding-right: 80px;">
-                                <h4 style="margin: 0; font-size: 1rem;">${item.name}</h4>
-                            </div>
-                        </div>
-                    `;
-                });
-                $('stat-courses').textContent = c;
-            });
-        }
-
-        function loadLeads() {
-            db.ref('leads').on('value', snap => {
-                const container = $('leadsTableBody');
-                container.innerHTML = '';
-                let count = 0;
-                const leads = [];
-                snap.forEach(child => { leads.push({id: child.key, ...child.val()}); });
-                leads.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
-                leads.forEach(lead => {
-                    count++;
-                    const time = new Date(lead.timestamp).toLocaleString([], { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' });
-                    container.innerHTML += `
-                        <tr>
-                            <td data-label="Time" style="font-size: 0.85rem; color: var(--text-muted);">${time}</td>
-                            <td data-label="Name" style="font-weight: 700;">${lead.name}</td>
-                            <td data-label="Phone" style="font-family: monospace;">${lead.phone}</td>
-                            <td data-label="Course Clicked"><span style="background: var(--primary-soft); color: var(--primary-dark); padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 700;">${lead.course}</span></td>
-                        </tr>
-                    `;
-                });
-                $('stat-leads').textContent = count;
-            });
-        }
-
-        window.clearLeads = () => {
-            if(confirm('Permanently clear all leads?')) db.ref('leads').remove();
-        };
-
-        function loadSuggested() {
-            db.ref('suggested').on('value', snap => {
-                const container = $('suggestedTableBody');
-                container.innerHTML = '';
-                let count = 0;
-                const list = [];
-                snap.forEach(child => { list.push({id: child.key, ...child.val()}); });
-                list.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
-                list.forEach(item => {
-                    count++;
-                    const time = new Date(item.timestamp).toLocaleString([], { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' });
-                    container.innerHTML += `
-                        <tr>
-                            <td data-label="Time" style="font-size: 0.85rem; color: var(--text-muted);">${time}</td>
-                            <td data-label="Name" style="font-weight: 700;">${item.name}</td>
-                            <td data-label="Phone" style="font-family: monospace;">${item.phone}</td>
-                            <td data-label="Suggestion"><span style="background: #fff7ed; color: #c2410c; padding: 4px 10px; border-radius: 8px; font-size: 0.9rem; font-weight: 600;">${item.suggestion}</span></td>
-                        </tr>
-                    `;
-                });
-                $('stat-suggested').textContent = count;
-            });
-        }
-
-        window.clearSuggested = () => {
-            if(confirm('Permanently clear all suggestions?')) db.ref('suggested').remove();
-        };
-
-        window.deleteItem = (path, id) => {
-            if(confirm('Delete this item permanently?')) db.ref(`${path}/${id}`).remove();
-        };
-
-        const courseM = $('courseModal');
-        $('openCourseModal').onclick = () => {
-            $('courseId').value = '';
-            $('courseName').value = '';
-            $('courseImageUrl').value = '';
-            $('courseLink').value = '';
-            $('courseModalTitle').textContent = 'New Course';
-            courseM.style.display = 'flex';
-        };
-        document.querySelectorAll('.close-modal').forEach(b => {
-            b.onclick = () => { courseM.style.display = 'none'; }
-        });
-
-        window.editCourse = (id, name, imageUrl, link) => {
-            $('courseId').value = id;
-            $('courseName').value = name;
-            $('courseImageUrl').value = imageUrl !== 'undefined' ? imageUrl : '';
-            $('courseLink').value = link !== 'undefined' ? link : '';
-            $('courseModalTitle').textContent = 'Edit Course';
-            courseM.style.display = 'flex';
-        };
-
-        $('saveCourseBtn').onclick = () => {
-            const id = $('courseId').value;
-            const name = $('courseName').value;
-            const imageUrl = $('courseImageUrl').value;
-            const link = $('courseLink').value;
-            if(name) {
-                const data = { name };
-                if (imageUrl) data.imageUrl = imageUrl;
-                if (link) data.link = link;
-                if (id) {
-                    db.ref(`courses/${id}`).update(data).then(() => { courseM.style.display = 'none'; });
-                } else {
-                    db.ref('courses').push(data).then(() => { courseM.style.display = 'none'; });
-                }
-            }
-        };
-    </script>
-    <div style="position: fixed; bottom: 10px; right: 10px; font-size: 10px; color: #cbd5e1; z-index: 9999;">Dashboard v2.2</div>
+    <script src="dashboard.js"></script>
+    <div style="position:fixed;bottom:10px;right:14px;font-size:10px;color:#334155;z-index:9999;">v3.0</div>
 </body>
 </html>
