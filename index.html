@@ -85,7 +85,7 @@
                 <div class="glass-card">
                     <div class="glass-card-header"><i class="fas fa-clock"></i> Recent Leads</div>
                     <div class="table-responsive">
-                        <table><thead><tr><th>Time</th><th>Name</th><th>Phone</th><th>Course</th></tr></thead>
+                        <table><thead><tr><th>Date</th><th>Time</th><th>Name</th><th>Phone</th><th>Course</th></tr></thead>
                         <tbody id="recentLeadsBody"></tbody></table>
                     </div>
                 </div>
@@ -96,13 +96,13 @@
                 <div class="section-header">
                     <h1>Website Leads</h1>
                     <div class="btn-group">
-                        <button class="btn-icon" onclick="loadLeads()"><i class="fas fa-rotate-right"></i> Refresh</button>
-                        <button class="btn-icon danger" onclick="clearLeads()"><i class="fas fa-trash"></i> Clear</button>
+                        <button class="btn-icon" id="refreshLeadsBtn" onclick="refreshLeads()"><i class="fas fa-rotate-right" id="refreshLeadsIcon"></i> Refresh</button>
+                        <button class="btn-icon danger" onclick="clearLeads()"><i class="fas fa-trash"></i> Delete All</button>
                     </div>
                 </div>
                 <div class="glass-card">
                     <div class="table-responsive">
-                        <table><thead><tr><th>Time</th><th>Name</th><th>Phone</th><th>Course</th></tr></thead>
+                        <table><thead><tr><th>Date</th><th>Time</th><th>Name</th><th>Phone</th><th>Course</th><th>Action</th></tr></thead>
                         <tbody id="leadsTableBody"></tbody></table>
                     </div>
                     <div class="pagination" id="leadsPagination"></div>
@@ -114,13 +114,13 @@
                 <div class="section-header">
                     <h1>Student Suggestions</h1>
                     <div class="btn-group">
-                        <button class="btn-icon" onclick="loadSuggested()"><i class="fas fa-rotate-right"></i> Refresh</button>
-                        <button class="btn-icon danger" onclick="clearSuggested()"><i class="fas fa-trash"></i> Clear</button>
+                        <button class="btn-icon" id="refreshSuggestedBtn" onclick="refreshSuggested()"><i class="fas fa-rotate-right" id="refreshSuggestedIcon"></i> Refresh</button>
+                        <button class="btn-icon danger" onclick="clearSuggested()"><i class="fas fa-trash"></i> Delete All</button>
                     </div>
                 </div>
                 <div class="glass-card">
                     <div class="table-responsive">
-                        <table><thead><tr><th>Time</th><th>Name</th><th>Phone</th><th>Suggestion</th></tr></thead>
+                        <table><thead><tr><th>Time</th><th>Name</th><th>Phone</th><th>Suggestion</th><th>Action</th></tr></thead>
                         <tbody id="suggestedTableBody"></tbody></table>
                     </div>
                     <div class="pagination" id="suggestedPagination"></div>

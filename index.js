@@ -36,26 +36,33 @@ if (!FIREBASE_URL) {
 }
 
 // --- 🔄 FIREBASE SESSION SYNC ---
-async function downloadSession() {
-    try {
-        console.log("📥 Syncing session from Firebase...");
-        const res = await fetch(`${FIREBASE_URL}/bot_session.json`);
-        const data = await res.json();
-        if (data && typeof data === 'object') {
-            if (!fs.existsSync(SESSION_PATH)) fs.mkdirSync(SESSION_PATH, { recursive: true });
-            for (const [hexName, base64Content] of Object.entries(data)) {
-                // Decode filename from hex, decode content from base64
-                const filename = Buffer.from(hexName, 'hex').toString();
-                const content = Buffer.from(base64Content, 'base64').toString('utf-8');
-                fs.writeFileSync(path.join(SESSION_PATH, filename), content);
+async function downloadSession(retries = 3) {
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+            console.log(`📥 Syncing session from Firebase (attempt ${attempt}/${retries})...`);
+            const res = await fetch(`${FIREBASE_URL}/bot_session.json`);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            if (data && typeof data === 'object') {
+                if (!fs.existsSync(SESSION_PATH)) fs.mkdirSync(SESSION_PATH, { recursive: true });
+                for (const [hexName, base64Content] of Object.entries(data)) {
+                    // Decode filename from hex, decode content from base64
+                    const filename = Buffer.from(hexName, 'hex').toString();
+                    const content = Buffer.from(base64Content, 'base64').toString('utf-8');
+                    fs.writeFileSync(path.join(SESSION_PATH, filename), content);
+                }
+                console.log("✅ Session restored from Firebase.");
+                return; // success
+            } else {
+                console.log("ℹ️ No existing session found in Firebase.");
+                return; // no session yet — not an error
             }
-            console.log("✅ Session restored from Firebase.");
-        } else {
-            console.log("ℹ️ No existing session found in Firebase.");
+        } catch (e) {
+            console.log(`⚠️ Session download attempt ${attempt} failed:`, e.message);
+            if (attempt < retries) await delay(3000); // wait 3s before retry
         }
-    } catch (e) {
-        console.log("⚠️ Session download error:", e.message);
     }
+    console.log("❌ Could not restore session after all attempts. Will need QR scan.");
 }
 
 async function uploadSession() {
@@ -93,11 +100,51 @@ let orderStates = {};
 let uploadDebounce = null;  // module-level: survives reconnects
 let isConnecting = false;   // guard against simultaneous startBot calls
 const decryptFailCount = {}; // tracks per-contact decrypt failures for auto-heal
+let activeSock = null;       // reference to the live socket for graceful shutdown
+
+// --- ⏱️ ORDER STATE TTL: expire stale flows after 30 minutes ---
+// Prevents users from being permanently stuck after a bot restart
+function pruneOrderStates() {
+    const now = Date.now();
+    for (const key of Object.keys(orderStates)) {
+        if (now - (orderStates[key].ts || 0) > 30 * 60 * 1000) {
+            delete orderStates[key];
+        }
+    }
+}
+setInterval(pruneOrderStates, 10 * 60 * 1000); // run every 10 minutes
+
+// --- 🛑 GRACEFUL SHUTDOWN (prevents WhatsApp "dirty session" on hourly restart) ---
+async function gracefulShutdown(signal) {
+    console.log(`\n🛑 ${signal} received — closing bot gracefully...`);
+    // Flush any pending debounced upload immediately
+    if (uploadDebounce) { clearTimeout(uploadDebounce); uploadDebounce = null; }
+    try {
+        // Upload latest session BEFORE closing socket
+        await uploadSession();
+        // Gracefully close the WhatsApp connection (tells WA servers we disconnected cleanly)
+        if (activeSock) {
+            activeSock.end(undefined);
+            await delay(2000); // give it 2s to send the logout frame
+        }
+    } catch (e) {
+        console.log('⚠️ Shutdown error:', e.message);
+    }
+    console.log('✅ Graceful shutdown complete.');
+    process.exit(0);
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM')); // GitHub Actions kill signal
+process.on('SIGINT',  () => gracefulShutdown('SIGINT'));  // Ctrl+C
 
 
 async function startBot() {
     if (isConnecting) return;
     isConnecting = true;
+    // BUG FIX: Reset decrypt fail counts so stale counts from previous run
+    // don't cause the auto-heal to delete valid session files immediately.
+    Object.keys(decryptFailCount).forEach(k => delete decryptFailCount[k]);
+    try {
     await downloadSession();
     
     const { state, saveCreds } = await useMultiFileAuthState(SESSION_PATH);
@@ -118,7 +165,12 @@ async function startBot() {
         version,
         auth: state,
         logger: require('pino')({ level: 'silent' }),
+        // Keep the connection alive with keepalive pings
+        keepAliveIntervalMs: 30_000,
+        // Retry message sending on temporary failure
+        retryRequestDelayMs: 2000,
     });
+    activeSock = sock; // expose for graceful shutdown
 
     // --- 📱 LID → PHONE MAP (resolves WhatsApp privacy IDs to real numbers) ---
     const lidPhoneMap = {};
@@ -286,7 +338,7 @@ async function startBot() {
                     return;
                 }
 
-                orderStates[userKey] = { step: 'WAITING_FOR_ADDRESS', item: matched };
+                orderStates[userKey] = { step: 'WAITING_FOR_ADDRESS', item: matched, ts: Date.now() };
                 await sock.sendMessage(sender, { text: `🛒 *Order Started!* \n\nYou selected: *${matched.name}*\n\nPlease reply with your *Full Name & Address*.` });
             }
             
@@ -299,9 +351,9 @@ async function startBot() {
             else if (orderStates[userKey] && orderStates[userKey].step === 'WAITING_FOR_COURSE' && !isNaN(parseInt(text))) {
                 const num = parseInt(text);
                 const state = orderStates[userKey];
-                const othersNum = state.courses.length + 1;
-                
-                if (num === othersNum) {
+
+                // 0 = Others (Suggest a course)
+                if (num === 0) {
                     if (!customerWaNumber) {
                         // Phone unknown — collect it first
                         await sock.sendMessage(sender, { text: "📞 *Please share your WhatsApp number* so we can follow up:\n\n_(Reply with your 10-digit number)_" });
@@ -313,14 +365,15 @@ async function startBot() {
                     return;
                 }
 
-                if (num > 0 && num <= state.courses.length) {
-                    const sel = state.courses[num-1];
+                // 1 to N = course selection
+                if (num >= 1 && num <= state.courses.length) {
+                    const sel = state.courses[num - 1];
                     const actualLink = sel.link || `https://www.asacademy.site`;
-                    
+
                     // Route through redirect.html to capture lead before sending to course
                     const safePhone = customerWaNumber || 'Unknown';
                     const trackingLink = `https://aseqp.netlify.app/redirect.html?phone=${safePhone}&name=${pushName}&course=${encodeURIComponent(sel.name)}&url=${encodeURIComponent(actualLink)}`;
-                    
+
                     const cap = `📚 *${sel.name}*\n\n👉 *Get it here:* ${trackingLink}`;
                     if (sel.imageUrl) {
                         await sock.sendMessage(sender, { image: { url: sel.imageUrl }, caption: cap });
@@ -372,9 +425,10 @@ async function startBot() {
                     ['0️⃣','1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣'][parseInt(d)]
                 ).join('');
                 let listMsg = "📚 *Available Courses:*\n\n";
-                courses.forEach((c, i) => listMsg += `${toEmoji(i+1)} ${c.name}\n`);
-                listMsg += `${toEmoji(courses.length + 1)} Others (Suggest a course)\n\n👉 Reply with a number`;
-                orderStates[userKey] = { step: 'WAITING_FOR_COURSE', courses: courses };
+                listMsg += `0️⃣ Others (Suggest a course)\n\n`;
+                courses.forEach((c, i) => listMsg += `${toEmoji(i + 1)} ${c.name}\n`);
+                listMsg += `\n👉 Reply with a number`;
+                orderStates[userKey] = { step: 'WAITING_FOR_COURSE', courses: courses, ts: Date.now() };
                 await sock.sendMessage(sender, { text: listMsg });
             }
             
@@ -399,6 +453,15 @@ async function startBot() {
             console.log("Message Error:", e.message);
         }
     });
+
+    } catch (e) {
+        // BUG FIX: If startBot() crashes before/during socket setup,
+        // isConnecting would stay true forever, blocking all future restarts.
+        console.log('❌ startBot() crashed unexpectedly:', e.message);
+        isConnecting = false;
+        console.log('🔄 Retrying in 10 seconds...');
+        setTimeout(startBot, 10000);
+    }
 }
 
 startBot();

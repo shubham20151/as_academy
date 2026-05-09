@@ -3,7 +3,7 @@ name: AS Academy WhatsApp Bot
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 * * * *' # Restart every hour to keep session alive
+    - cron: '0 */5 * * *' # Restart every 5 hours (less churn = stable session)
 
 concurrency:
   group: whatsapp-bot      # Only ONE bot instance allowed at a time
@@ -12,6 +12,8 @@ concurrency:
 jobs:
   run-bot:
     runs-on: ubuntu-latest
+    timeout-minutes: 290   # ~4h 50min — exits cleanly before GitHub's 6h hard kill
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -29,4 +31,13 @@ jobs:
           FIREBASE_URL: ${{ secrets.FIREBASE_URL }}
           ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
           ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-        run: npm start
+        # Run bot for ~17,400s (4h 50min), then send SIGTERM for graceful shutdown.
+        # The bot's SIGTERM handler uploads session & closes WA connection cleanly.
+        run: |
+          node index.js &
+          BOT_PID=$!
+          sleep 17400
+          echo "⏰ Scheduled shutdown: sending SIGTERM to bot (PID $BOT_PID)"
+          kill -SIGTERM $BOT_PID
+          wait $BOT_PID || true
+          echo "✅ Bot exited cleanly."

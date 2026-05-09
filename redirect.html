@@ -262,15 +262,29 @@
             setTimeout(() => { window.location.href = redirectUrl; }, 600);
         }
 
-        function saveLead(finalPhone) {
-            const cleanPhone = (finalPhone !== 'Unknown' && !finalPhone.startsWith('+')) ? '+' + finalPhone : finalPhone;
-            // Remember this number in browser per course so it only skips if they already entered it for THIS specific course
-            if (finalPhone !== 'Unknown') {
-                try { localStorage.setItem('aseqp_phone_' + encodeURIComponent(course), finalPhone); } catch(e) {}
-            }
-            db.ref('leads').push({ name, phone: cleanPhone, course, timestamp: new Date().toISOString() })
-              .then(() => doRedirect())
-              .catch(() => doRedirect());
+        // saveLead is ONLY called when the user manually types their phone number
+        // for the first time. URL params & localStorage both just redirect silently.
+        function saveLead(enteredPhone) {
+            const cleanPhone = enteredPhone.startsWith('+') ? enteredPhone : '+' + enteredPhone;
+
+            // Store phone for this course so repeat visits skip the form
+            try { localStorage.setItem('aseqp_phone_' + encodeURIComponent(course), enteredPhone); } catch(e) {}
+
+            // Build record with date + time as separate readable fields
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+            const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+            db.ref('leads').push({
+                name,
+                phone: cleanPhone,
+                course,
+                date: dateStr,
+                time: timeStr,
+                timestamp: now.toISOString()
+            })
+            .then(() => doRedirect())
+            .catch(() => doRedirect());
         }
 
         window.submitPhone = function() {
@@ -279,7 +293,7 @@
                 document.getElementById('phoneInput').style.borderColor = '#ef4444';
                 return;
             }
-            saveLead(val);
+            saveLead(val); // ← Only place saveLead is ever called
         };
 
         // Allow pressing Enter on the input
@@ -290,18 +304,19 @@
 
         auth.signInAnonymously().then(() => {
             if (phone !== 'Unknown') {
-                // Bot already knows the phone — redirect immediately
-                saveLead(phone);
+                // Bot already knows the phone → just redirect, already tracked by bot
+                doRedirect();
                 return;
             }
-            // Try localStorage first — check if they already entered their number for THIS specific course
+            // Check if user already entered their phone for this course before
             let savedPhone = null;
             try { savedPhone = localStorage.getItem('aseqp_phone_' + encodeURIComponent(course)); } catch(e) {}
             if (savedPhone && savedPhone.length >= 7) {
-                saveLead(savedPhone);
+                // Already captured before → just redirect silently
+                doRedirect();
                 return;
             }
-            // Truly unknown for this course — show the input form
+            // First time on this course — show the phone input form
             document.getElementById('cardDesc').textContent = 'One quick step before your course 👇';
             document.getElementById('loadingView').style.display = 'none';
             document.getElementById('phoneForm').classList.add('show');
