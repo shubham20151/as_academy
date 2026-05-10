@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AS Academy – Redirecting</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --blue: #3b82f6;
+            --blue-glow: rgba(59,130,246,0.35);
+            --cyan: #06b6d4;
+            --glass: rgba(255,255,255,0.05);
+            --glass-border: rgba(255,255,255,0.1);
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: #020817;
+            min-height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated aurora background */
+        .aurora {
+            position: fixed; inset: 0; z-index: 0;
+            background: 
+                radial-gradient(ellipse 80% 60% at 20% 20%, rgba(59,130,246,0.18) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 80% 80%, rgba(6,182,212,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse 50% 40% at 50% 50%, rgba(139,92,246,0.08) 0%, transparent 70%);
+            animation: auroraShift 8s ease-in-out infinite alternate;
+        }
+        @keyframes auroraShift {
+            0%   { transform: scale(1) rotate(0deg); }
+            100% { transform: scale(1.1) rotate(3deg); }
+        }
+
+        /* Floating orbs */
+        .orb {
+            position: fixed; border-radius: 50%; filter: blur(80px);
+            animation: orbFloat 10s ease-in-out infinite;
+            pointer-events: none; z-index: 0;
+        }
+        .orb1 { width: 350px; height: 350px; background: rgba(59,130,246,0.15); top: -100px; left: -100px; animation-delay: 0s; }
+        .orb2 { width: 250px; height: 250px; background: rgba(6,182,212,0.12); bottom: -80px; right: -80px; animation-delay: -4s; }
+        .orb3 { width: 200px; height: 200px; background: rgba(139,92,246,0.1); top: 50%; left: 50%; animation-delay: -2s; }
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -20px) scale(1.05); }
+            66% { transform: translate(-20px, 15px) scale(0.95); }
+        }
+
+        /* Grid lines */
+        .grid {
+            position: fixed; inset: 0; z-index: 0;
+            background-image: 
+                linear-gradient(rgba(59,130,246,0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59,130,246,0.04) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        /* Card */
+        .card {
+            position: relative; z-index: 10;
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 28px;
+            padding: 52px 44px;
+            max-width: 420px; width: 90%;
+            text-align: center;
+            box-shadow: 0 0 60px rgba(59,130,246,0.1), 0 32px 64px rgba(0,0,0,0.4);
+            animation: cardIn 0.6s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Top glow line */
+        .card::before {
+            content: '';
+            position: absolute; top: 0; left: 20%; right: 20%; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--blue), var(--cyan), transparent);
+            border-radius: 50%;
+        }
+
+        .logo-icon {
+            width: 72px; height: 72px;
+            background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(6,182,212,0.2));
+            border: 1px solid rgba(59,130,246,0.3);
+            border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 24px;
+            box-shadow: 0 0 30px rgba(59,130,246,0.2);
+            animation: pulse 3s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(59,130,246,0.2); }
+            50% { box-shadow: 0 0 40px rgba(59,130,246,0.4); }
+        }
+
+        h1 {
+            font-size: 1.6rem; font-weight: 800;
+            background: linear-gradient(135deg, #ffffff, #94a3b8);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        p {
+            color: #64748b; font-size: 0.95rem;
+            margin-bottom: 36px;
+        }
+
+        /* Spinner */
+        .spinner-wrap { position: relative; width: 56px; height: 56px; margin: 0 auto 20px; }
+        .spinner {
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            border: 2px solid rgba(59,130,246,0.1);
+            border-top-color: var(--blue);
+            border-right-color: var(--cyan);
+            animation: spin 1s cubic-bezier(0.6,0,0.4,1) infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spinner-inner {
+            position: absolute; inset: 8px;
+            border-radius: 50%;
+            border: 1px solid rgba(6,182,212,0.15);
+            border-bottom-color: var(--cyan);
+            animation: spin 1.5s cubic-bezier(0.6,0,0.4,1) infinite reverse;
+        }
+
+        .status {
+            font-size: 0.82rem; color: #475569;
+            letter-spacing: 0.5px;
+        }
+        .status span {
+            display: inline-block;
+            animation: dotPulse 1.4s infinite;
+        }
+        .status span:nth-child(2) { animation-delay: 0.2s; }
+        .status span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes dotPulse { 0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
+
+        /* Progress bar */
+        .progress-bar {
+            height: 2px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 2px;
+            margin-top: 28px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--blue), var(--cyan));
+            border-radius: 2px;
+            animation: progressLoad 2s ease forwards;
+        }
+        @keyframes progressLoad { from { width: 0%; } to { width: 100%; } }
+
+        /* Phone input form */
+        .phone-form { display: none; margin-top: 28px; }
+        .phone-form.show { display: block; }
+        .phone-label { font-size: 0.82rem; color: #64748b; margin-bottom: 10px; display: block; }
+        .phone-input-wrap { display: flex; gap: 8px; }
+        .phone-input {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: #fff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .phone-input:focus { border-color: var(--blue); }
+        .phone-input::placeholder { color: #475569; }
+        .phone-submit {
+            background: linear-gradient(135deg, var(--blue), var(--cyan));
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            color: #fff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.2s;
+            white-space: nowrap;
+        }
+        .phone-submit:hover { opacity: 0.9; transform: scale(1.02); }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+</head>
+<body>
+    <div class="aurora"></div>
+    <div class="grid"></div>
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+
+    <div class="card">
+        <div class="logo-icon">📚</div>
+        <h1>AS Academy</h1>
+        <p id="cardDesc">Taking you to your course...</p>
+
+        <!-- Shown when phone is already known -->
+        <div id="loadingView">
+            <div class="spinner-wrap">
+                <div class="spinner"></div>
+                <div class="spinner-inner"></div>
+            </div>
+            <div class="status" id="status">Loading<span>.</span><span>.</span><span>.</span></div>
+            <div class="progress-bar"><div class="progress-fill"></div></div>
+        </div>
+
+        <!-- Shown when phone is Unknown -->
+        <div class="phone-form" id="phoneForm">
+            <label class="phone-label">📲 Enter your WhatsApp number to continue</label>
+            <div class="phone-input-wrap">
+                <input class="phone-input" id="phoneInput" type="tel" maxlength="15">
+                <button class="phone-submit" onclick="submitPhone()">Go →</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCG5EZoyctsQCoSrlbXyQ1Q4qQ5bVEkMis",
+            authDomain: "asacademywpbot.firebaseapp.com",
+            databaseURL: "https://asacademywpbot-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "asacademywpbot",
+            storageBucket: "asacademywpbot.firebasestorage.app",
+            messagingSenderId: "250186915176",
+            appId: "1:250186915176:web:885a1cea554752171b0add"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        const params = new URLSearchParams(window.location.search);
+        const rawPhone = params.get('phone') || '';
+        // Guard: JS null serialises to the string 'null' in template literals
+        const phone = (rawPhone && rawPhone !== 'null' && rawPhone !== 'undefined') ? rawPhone : 'Unknown';
+        const name = decodeURIComponent(params.get('name') || 'Guest');
+        const course = decodeURIComponent(params.get('course') || 'Website Visit');
+        const redirectUrl = params.get('url') || 'https://www.asacademy.site';
+
+        function doRedirect() {
+            document.getElementById('status').textContent = 'Redirecting...';
+            setTimeout(() => { window.location.href = redirectUrl; }, 600);
+        }
+
+        // saveLead is ONLY called when the user manually types their phone number
+        // for the first time. URL params & localStorage both just redirect silently.
+        function saveLead(enteredPhone) {
+            const cleanPhone = enteredPhone.startsWith('+') ? enteredPhone : '+' + enteredPhone;
+
+            // Store phone for this course so repeat visits skip the form
+            try { localStorage.setItem('aseqp_phone_' + encodeURIComponent(course), enteredPhone); } catch(e) {}
+
+            // Build record with date + time as separate readable fields
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+            const timeStr = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+            db.ref('leads').push({
+                name,
+                phone: cleanPhone,
+                course,
+                date: dateStr,
+                time: timeStr,
+                timestamp: now.toISOString()
+            })
+            .then(() => doRedirect())
+            .catch(() => doRedirect());
+        }
+
+        window.submitPhone = function() {
+            const val = document.getElementById('phoneInput').value.trim().replace(/\D/g, '');
+            if (val.length < 7) {
+                document.getElementById('phoneInput').style.borderColor = '#ef4444';
+                return;
+            }
+            saveLead(val); // ← Only place saveLead is ever called
+        };
+
+        // Allow pressing Enter on the input
+        document.addEventListener('DOMContentLoaded', () => {
+            const inp = document.getElementById('phoneInput');
+            if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') window.submitPhone(); });
+        });
+
+        auth.signInAnonymously().then(() => {
+            if (phone !== 'Unknown') {
+                // Bot already knows the phone → just redirect, already tracked by bot
+                doRedirect();
+                return;
+            }
+            // Check if user already entered their phone for this course before
+            let savedPhone = null;
+            try { savedPhone = localStorage.getItem('aseqp_phone_' + encodeURIComponent(course)); } catch(e) {}
+            if (savedPhone && savedPhone.length >= 7) {
+                // Already captured before → just redirect silently
+                doRedirect();
+                return;
+            }
+            // First time on this course — show the phone input form
+            document.getElementById('cardDesc').textContent = 'One quick step before your course 👇';
+            document.getElementById('loadingView').style.display = 'none';
+            document.getElementById('phoneForm').classList.add('show');
+        }).catch(() => doRedirect());
+    </script>
+</body>
+</html>

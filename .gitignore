@@ -7,8 +7,3 @@ auth_info_baileys/
 session/
 auth_state/
 
-# Frontend Files
-dashboard.css
-dashboard.js
-index.html
-redirect.html
