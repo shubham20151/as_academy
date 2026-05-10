@@ -1,9 +1,12 @@
 name: AS Academy WhatsApp Bot
 
 on:
+  push:
+    branches: [ main ]
   workflow_dispatch:
   schedule:
     - cron: '0 */5 * * *' # Restart every 5 hours (less churn = stable session)
+
 
 concurrency:
   group: whatsapp-bot      # Only ONE bot instance allowed at a time
